@@ -30,23 +30,41 @@ def greedy(jobs, keys):
             chosen.append(jobs[i])
     return chosen
 
-#all four algorithms are O(n^2), sorting is O(nlogn) but fits() loops over every chosen job
+# valid only when jobs are processed in time order (earliest finish or earliest start)
+# the sort is O(n log n) and the scan is O(n), so the total is O(n log n)
+def greedyLastEnd(jobs, keys):
+    pairs = []
+    for i in range(len(jobs)):
+        pairs.append((keys[i], i))
+    pairs.sort()
 
-#uses greedy and selects jobs with the earliest finish time
+    chosen = []
+    lastEnd = float('-inf')
+    for key, i in pairs:
+        s, f = jobs[i]
+        if s >= lastEnd:
+            chosen.append(jobs[i])
+            lastEnd = f
+    return chosen
+
+#the first two algorithms are O(nlogn)
+#the last 2 are O(n^2), sorting is O(nlogn) but fits() loops over every chosen job
+
+#uses greedyLastEnd and selects jobs with the earliest finish time
 #ties go to earlier start, then lower index
 def earliestFinish(jobs):
     keys = []
     for (s, f) in jobs:
         keys.append((f, s))          
-    return greedy(jobs, keys)
+    return greedyLastEnd(jobs, keys)
 
-#uses greedy and selects jobs with the earliest start time
+#uses greedyLastEnd and selects jobs with the earliest start time
 #ties go to earlier finish, then lower index
 def earliestStart(jobs):
     keys = []
     for (s, f) in jobs:
         keys.append((s, f))          
-    return greedy(jobs, keys)
+    return greedyLastEnd(jobs, keys)
 
 #uses greedy and selects jobs with the shortest time duration
 #ties go to earlier finish, then earlier start, then lower index
