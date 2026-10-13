@@ -4,7 +4,7 @@ import csv
 import statistics
 from greedy import earliestFinish, earliestStart, shortestDuration, earliestMidpoint
 
-# short jobs spread over a long timeline, so many jobs get chosen (a demanding case)
+# short jobs spread over a long timeline, so many jobs get chosen 
 def timingJobs(n, seed):
     rng = random.Random(seed)            # fixed seed = same instances every run
     jobs = []
@@ -23,7 +23,7 @@ def timeOnce(algo, jobs):
 
 SIZES = [100, 1000, 10000, 100000]
 REPEATS = 3
-SLOW_LIMIT = 10000   # C and D are O(n^2), so skip sizes above this if too slow
+SLOW_LIMIT = 10000   # Shortest Duration and Midpoint O(n^2) so skips if too slow
 
 algorithms = [
     ("Earliest Finish", earliestFinish),
@@ -35,7 +35,7 @@ algorithms = [
 if __name__ == "__main__":
     rows = []
     for n in SIZES:
-        jobs = timingJobs(n, seed=n)      # seed = n, document this in the README
+        jobs = timingJobs(n, seed=n)      # seed = n
         for name, algo in algorithms:
             slow = name in ("Shortest Duration", "Earliest Midpoint")
             if slow and n > SLOW_LIMIT:
