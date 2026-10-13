@@ -1,6 +1,7 @@
 import random
 from greedy import earliestFinish, earliestStart, earliestMidpoint, shortestDuration, exactSolver
 
+#creates a list of random job intervals
 def randomJobs(n, maxTime, rng):
     jobs = []
     for _ in range(n):
@@ -9,6 +10,8 @@ def randomJobs(n, maxTime, rng):
         jobs.append((s,f))
     return jobs
 
+#uses the heuristics in greedy.py to find what it would have picked
+#uses exactSolver to find the optimal solutions
 def findCounterExample(heuristic, seed, trialsPerSize = 5000):
     rng = random.Random(seed)
     for n in range(3, 9):
@@ -20,6 +23,8 @@ def findCounterExample(heuristic, seed, trialsPerSize = 5000):
                 return(jobs, heuristicSol, optSol)
     return None
 
+#creates a visual for the job intervals
+#during a job time, there will be ## instead of ..
 def drawTimeline(jobs, chosen):
     maxTime = 0
     for (s, f) in jobs:
@@ -37,6 +42,7 @@ def drawTimeline(jobs, chosen):
             mark = "<- picked"
         print(row, (s,f), mark)
 
+#create a report with all of the results
 def report(heuristic, seed):
     result = findCounterExample(heuristic, seed)
     if result is None:
@@ -52,6 +58,7 @@ def report(heuristic, seed):
     print("Timeline of optimal solution: ")
     drawTimeline(jobs, optSol)
 
+#print out the results in the report
 SEED = 200000
 print("Earliest Start")
 report(earliestStart, SEED)
