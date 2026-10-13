@@ -1,7 +1,7 @@
 import random
 import itertools
 
-from greedy import overlaps, fits, exactSolver, earliestFinish
+from greedy import overlaps, fits, exactSolver, earliestFinish, earliestStart, shortestDuration,earliestMidpoint
 # FUNCTIONS FOR GENERATING INSTANCES
 #relatively sparse
 def generateSparseInstances(num_jobs=10, max_time=100):
@@ -41,38 +41,72 @@ def generateClusteredInstances(num_jobs=10, max_time=50):
         jobs.append((s, s + duration))
     return jobs
 
+#PART FIVE EXECUTION
+
 #FUNCTION FOR TESTING GREEDY ALGORITHM
 def testGreedyAlgorithm(num_tests=25):
     random.seed(42) #needed to keep solutions reproducable
 
-    distributions = {
-        "Sparse Intervals": generateSparseInstances,
-        "Heavily Overlapping": generateOverlapInstances,
-        "Varied Interval Lengths": generateVaryingInstances,
-        "Clustered Start Times": generateClusteredInstances,
+    heuristics = { 
+        "Earliest Finish": earliestFinish,
+        "Earliest Start": earliestStart,
+        "Shortest Duration": shortestDuration,
+        "Earliest Midpoint": earliestMidpoint,
     }
+    generators = [
+        ("Sparse", generateSparseInstances),
+        ("Dense", generateOverlapInstances),
+        ("Varied", generateVaryingInstances),
+        ("Clustered", generateClusteredInstances),
+    ]
 
-    tested = 0
-    matched = 0
-    print("testing part 4")
-
-    for dist_name, gen_func in distributions.items():
-        matched_in_dist = 0
-        
+    instances = []
+    for dist_name, gen_func in generators:        
         for _ in range(num_tests):
-            instance = gen_func()
+            instances.append((dist_name, gen_func()))
             
-            opt_size = len(exactSolver(instance))
-            greedy_size = len(earliestFinish(instance))
+    for h_name, h_func in heuristics.items():
+        optimal_count = 0
+        ratios = []
+        worst_ratio = 1.0
+        worst_instance = None
+        worst_opt_len = 0
+        worst_h_len = 0
+
+        for dist_name, instance in instances:
+            opt_sol = exactSolver(instance)
+            opt_len = len(opt_sol)
+
+            if opt_len == 0:
+                continue
+
+            h_sol = h_func(instance)
+            h_len = len(h_sol)
+
+            ratio = h_len / opt_len
+            ratios.append(ratio)
+
+            if h_len == opt_len:
+                optimal_count += 1
             
-            tested += 1
-            if greedy_size == opt_size:
-                matched_in_dist += 1
-                matched += 1
-            else:
-                
-                print(f"FAILED {dist_name}, Instance: {instance}")
+            if ratio < worst_ratio:
+                worst_ratio = ratio
+                worst_instance = instance
+                worst_opt_len = opt_len
+                worst_h_len = h_len
 
-        print(f" Distribution: {dist_name:<25} Matched: {matched_in_dist}/{num_tests}")
+        pct_optimal = (optimal_count / len(instances)) * 100
+        avg_ratio = sum(ratios) / len(ratios)
 
-testGreedyAlgorithm(num_tests=25)
+        print(f"\nHEURISTIC: {h_name}")
+        print(f"  • Optimal Matches : {optimal_count}/{len(instances)} ({pct_optimal:.1f}%)")
+        print(f"  • Avg Ratio |H|/OPT: {avg_ratio:.4f}")
+        if worst_instance:
+            print(f"  • Worst Ratio     : {worst_ratio:.2f} (|H|={worst_h_len}, OPT={worst_opt_len})")
+            print(f"  • Worst Instance  : {worst_instance}")
+        else:
+            print(f"  • Worst Ratio     : 1.00 (No suboptimal instances found)")
+
+if __name__ == "__main__":
+    testGreedyAlgorithm()
+
